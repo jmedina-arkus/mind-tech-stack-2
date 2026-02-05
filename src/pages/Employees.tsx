@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Upload, Download } from "lucide-react";
+import { Plus, Trash2, Upload, Download, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Employee {
@@ -32,13 +32,8 @@ interface Employee {
   email: string;
   position: string;
   seniority?: string;
-  department: string;
   skills: string[];
   experience_years: number;
-  salary: number;
-  hire_date: string;
-  status: string;
-  phone: string;
   location: string;
   last_project: string;
   resume_url: string;
@@ -46,7 +41,8 @@ interface Employee {
 
 const Employees = () => {
   const { toast } = useToast();
-  const { employees, addEmployee, deleteEmployee } = useEmployees();
+  const { employees, addEmployee, deleteEmployee, updateEmployee } =
+    useEmployees();
 
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,11 +59,14 @@ const Employees = () => {
   >("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   /* 🔑 FORM STATE */
   const [formData, setFormData] = useState<Partial<Employee>>({});
   const [skillsText, setSkillsText] = useState(""); // ✅ estado visual
+  const [editData, setEditData] = useState<Partial<Employee>>({});
+  const [editSkillsText, setEditSkillsText] = useState("");
 
   /* =========================
      FILTER
@@ -103,6 +102,13 @@ const Employees = () => {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+
+  const normalizeUrlForHref = (value?: string) => {
+    const trimmed = (value ?? "").trim();
+    if (!trimmed) return "";
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
 
   const parseCSV = (text: string) => {
     const rows: string[][] = [];
@@ -167,6 +173,10 @@ const Employees = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleEditChange = (field: keyof Employee, value: any) => {
+    setEditData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const toggleSort = (
     key:
       | "name"
@@ -229,12 +239,8 @@ const Employees = () => {
       name: formData.name,
       email: formData.email,
       position: formData.position,
-      department: formData.department || "",
+      seniority: formData.seniority || "",
       experience_years: formData.experience_years || 0,
-      salary: formData.salary || 0,
-      hire_date: new Date().toISOString().split("T")[0],
-      status: "active",
-      phone: "",
       location: formData.location || "",
       last_project: formData.last_project || "",
       resume_url: formData.resume_url || "",
@@ -246,6 +252,45 @@ const Employees = () => {
     setFormData({});
     setSkillsText("");
     setIsAddOpen(false);
+  };
+
+  const openEdit = (employee: Employee) => {
+    setEditData(employee);
+    setEditSkillsText((employee.skills ?? []).join(", "));
+    setIsEditOpen(true);
+  };
+
+  const handleEdit = async () => {
+    const skillsArray = parseSkills(editSkillsText);
+
+    if (!editData.id) return;
+
+    if (!editData.name || !editData.email || !editData.position) {
+      toast({
+        title: "Campos requeridos",
+        description: "Nombre, email y posición",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await updateEmployee(editData.id, {
+      name: editData.name,
+      email: editData.email,
+      position: editData.position,
+      seniority: editData.seniority || "",
+      experience_years: editData.experience_years || 0,
+      location: editData.location || "",
+      last_project: editData.last_project || "",
+      resume_url: editData.resume_url || "",
+      skills: skillsArray,
+    });
+
+    toast({ title: "Empleado actualizado" });
+
+    setIsEditOpen(false);
+    setEditData({});
+    setEditSkillsText("");
   };
 
   /* =========================
@@ -299,14 +344,10 @@ const Employees = () => {
         name,
         email,
         position,
-        department: getValue(row, "department") || "",
+        seniority: getValue(row, "seniority") || "",
         experience_years: Number.isFinite(experienceYears)
           ? experienceYears
           : 0,
-        salary: 0,
-        hire_date: new Date().toISOString().split("T")[0],
-        status: "active",
-        phone: "",
         location: getValue(row, "location") || "",
         last_project: getValue(row, "last_project") || "",
         resume_url: getValue(row, "resume_url") || "",
@@ -330,7 +371,7 @@ const Employees = () => {
       "name",
       "email",
       "position",
-      "department",
+      "seniority",
       "experience_years",
       "skills",
       "location",
@@ -350,7 +391,7 @@ const Employees = () => {
       e.name,
       e.email,
       e.position,
-      e.department,
+      e.seniority,
       e.experience_years,
       (e.skills ?? []).join(", "),
       e.location,
@@ -445,12 +486,12 @@ const Employees = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="employee-department">Departamento</Label>
+                  <Label htmlFor="employee-seniority">Seniority</Label>
                   <Input
-                    id="employee-department"
-                    placeholder="Departamento"
-                    value={formData.department || ""}
-                    onChange={(e) => handleChange("department", e.target.value)}
+                    id="employee-seniority"
+                    placeholder="Junior, Mid, Senior"
+                    value={formData.seniority || ""}
+                    onChange={(e) => handleChange("seniority", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
@@ -500,7 +541,7 @@ const Employees = () => {
                   <Label htmlFor="employee-resume-url">Resume URL</Label>
                   <Input
                     id="employee-resume-url"
-                    placeholder="https://docs.google.com/..."
+                    placeholder="URL del CV"
                     value={formData.resume_url || ""}
                     onChange={(e) => handleChange("resume_url", e.target.value)}
                   />
@@ -514,6 +555,130 @@ const Employees = () => {
                 <Button onClick={handleAdd}>Agregar empleado</Button>
               </div>
             </DialogContent>
+            </Dialog>
+
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Editar Empleado</DialogTitle>
+                  <DialogDescription>
+                    Actualiza los datos del empleado seleccionado.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-name">Nombre *</Label>
+                    <Input
+                      id="edit-employee-name"
+                      placeholder="Nombre completo"
+                      value={editData.name || ""}
+                      onChange={(e) => handleEditChange("name", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-email">Email *</Label>
+                    <Input
+                      id="edit-employee-email"
+                      placeholder="email@company.com"
+                      value={editData.email || ""}
+                      onChange={(e) =>
+                        handleEditChange("email", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-position">Posición *</Label>
+                    <Input
+                      id="edit-employee-position"
+                      placeholder="Cargo o posición"
+                      value={editData.position || ""}
+                      onChange={(e) =>
+                        handleEditChange("position", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-seniority">Seniority</Label>
+                    <Input
+                      id="edit-employee-seniority"
+                      placeholder="Junior, Mid, Senior"
+                      value={editData.seniority || ""}
+                      onChange={(e) =>
+                        handleEditChange("seniority", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="edit-employee-skills">Habilidades</Label>
+                    <Textarea
+                      id="edit-employee-skills"
+                      placeholder="JavaScript, React, Node.js (separadas por comas)"
+                      value={editSkillsText}
+                      onChange={(e) => setEditSkillsText(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-experience">
+                      Años de Experiencia
+                    </Label>
+                    <Input
+                      id="edit-employee-experience"
+                      placeholder="0"
+                      type="number"
+                      value={editData.experience_years || 0}
+                      onChange={(e) =>
+                        handleEditChange(
+                          "experience_years",
+                          Number(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-location">Ubicación</Label>
+                    <Input
+                      id="edit-employee-location"
+                      placeholder="Ciudad, País"
+                      value={editData.location || ""}
+                      onChange={(e) =>
+                        handleEditChange("location", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-employee-last-project">
+                      Proyecto actual
+                    </Label>
+                    <Input
+                      id="edit-employee-last-project"
+                      placeholder="Nombre del proyecto"
+                      value={editData.last_project || ""}
+                      onChange={(e) =>
+                        handleEditChange("last_project", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="edit-employee-resume-url">Resume URL</Label>
+                    <Input
+                      id="edit-employee-resume-url"
+                      placeholder="URL del CV"
+                      value={editData.resume_url || ""}
+                      onChange={(e) =>
+                        handleEditChange("resume_url", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleEdit}>Guardar cambios</Button>
+                </div>
+              </DialogContent>
             </Dialog>
           </div>
         </div>
@@ -637,7 +802,7 @@ const Employees = () => {
                     <TableCell className="text-center py-4 px-4">
                       {e.resume_url ? (
                         <a
-                          href={e.resume_url}
+                          href={normalizeUrlForHref(e.resume_url)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-blue-600 underline"
@@ -649,6 +814,13 @@ const Employees = () => {
                       )}
                     </TableCell>
                     <TableCell className="flex justify-center gap-2 py-4 px-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEdit(e)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"

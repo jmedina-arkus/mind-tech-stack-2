@@ -7,13 +7,9 @@ export interface Employee {
   name: string;
   email: string;
   position: string;
-  department: string;
+  seniority?: string;
   skills: string[];
   experience_years: number;
-  salary: number;
-  hire_date: string;
-  status: string;
-  phone: string;
   location: string;
   created_at?: string;
   updated_at?: string;
@@ -41,13 +37,8 @@ const mockEmployees: Employee[] = [
     name: "Ana García",
     email: "ana.garcia@company.com",
     position: "Senior Developer",
-    department: "Desarrollo",
     skills: ["JavaScript", "React", "Node.js", "TypeScript"],
     experience_years: 5,
-    salary: 75000,
-    hire_date: "2019-03-15",
-    status: "active",
-    phone: "+34 600 123 456",
     location: "Madrid",
   },
   {
@@ -55,13 +46,8 @@ const mockEmployees: Employee[] = [
     name: "Carlos Rodríguez",
     email: "carlos.rodriguez@company.com",
     position: "Full Stack Developer",
-    department: "Desarrollo",
     skills: ["Python", "Django", "React", "PostgreSQL"],
     experience_years: 4,
-    salary: 68000,
-    hire_date: "2020-07-22",
-    status: "active",
-    phone: "+34 600 234 567",
     location: "Barcelona",
   },
   {
@@ -69,13 +55,8 @@ const mockEmployees: Employee[] = [
     name: "María López",
     email: "maria.lopez@company.com",
     position: "Frontend Developer",
-    department: "Desarrollo",
     skills: ["React", "Vue.js", "CSS", "JavaScript"],
     experience_years: 3,
-    salary: 55000,
-    hire_date: "2021-01-10",
-    status: "active",
-    phone: "+34 600 345 678",
     location: "Valencia",
   },
   {
@@ -83,13 +64,8 @@ const mockEmployees: Employee[] = [
     name: "Juan Martínez",
     email: "juan.martinez@company.com",
     position: "Backend Developer",
-    department: "Desarrollo",
     skills: ["Java", "Spring", "MySQL", "Docker"],
     experience_years: 6,
-    salary: 72000,
-    hire_date: "2018-09-12",
-    status: "active",
-    phone: "+34 600 456 789",
     location: "Sevilla",
   },
   {
@@ -97,13 +73,8 @@ const mockEmployees: Employee[] = [
     name: "Laura Sánchez",
     email: "laura.sanchez@company.com",
     position: "DevOps Engineer",
-    department: "Infraestructura",
     skills: ["AWS", "Docker", "Kubernetes", "Terraform"],
     experience_years: 4,
-    salary: 78000,
-    hire_date: "2020-02-28",
-    status: "active",
-    phone: "+34 600 567 890",
     location: "Bilbao",
   },
   {
@@ -111,13 +82,8 @@ const mockEmployees: Employee[] = [
     name: "Pedro Jiménez",
     email: "pedro.jimenez@company.com",
     position: "UI/UX Designer",
-    department: "Diseño",
     skills: ["Figma", "Adobe XD", "Sketch", "Prototyping"],
     experience_years: 3,
-    salary: 52000,
-    hire_date: "2021-05-18",
-    status: "active",
-    phone: "+34 600 678 901",
     location: "Madrid",
   },
   {
@@ -125,13 +91,8 @@ const mockEmployees: Employee[] = [
     name: "Carmen Ruiz",
     email: "carmen.ruiz@company.com",
     position: "Data Scientist",
-    department: "Datos",
     skills: ["Python", "R", "Machine Learning", "SQL"],
     experience_years: 5,
-    salary: 80000,
-    hire_date: "2019-11-03",
-    status: "active",
-    phone: "+34 600 789 012",
     location: "Barcelona",
   },
   {
@@ -139,13 +100,8 @@ const mockEmployees: Employee[] = [
     name: "Miguel Torres",
     email: "miguel.torres@company.com",
     position: "Mobile Developer",
-    department: "Desarrollo",
     skills: ["React Native", "Swift", "Kotlin", "Flutter"],
     experience_years: 4,
-    salary: 65000,
-    hire_date: "2020-08-14",
-    status: "active",
-    phone: "+34 600 890 123",
     location: "Valencia",
   },
 ];
@@ -397,7 +353,7 @@ export function useDashboardStats() {
   const { prompts } = usePrompts();
 
   const stats = {
-    totalEmployees: employees.filter(emp => emp.status === 'active').length,
+    totalEmployees: employees.length,
     totalRequests: prompts.length,
     avgResponseTime: prompts.length > 0
       ? `${(prompts.reduce((acc, p) => acc + p.processing_time_ms, 0) / prompts.length / 1000).toFixed(1)}s`

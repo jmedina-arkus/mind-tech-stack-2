@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Users,
   MessageSquare,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -33,11 +32,6 @@ const navigation = [
     name: "Prompts",
     href: "/prompts",
     icon: MessageSquare,
-  },
-  {
-    name: "Configuración",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 

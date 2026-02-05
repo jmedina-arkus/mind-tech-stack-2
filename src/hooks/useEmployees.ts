@@ -6,12 +6,8 @@ export interface Employee {
     name: string;
     email: string;
     position: string;
-    department: string;
+    seniority?: string;
     experience_years: number;
-    salary: number;
-    hire_date: string;
-    status: string;
-    phone: string;
     location: string;
     last_project: string;
     resume_url: string;
@@ -72,12 +68,8 @@ export function useEmployees() {
                 name: employee.name,
                 email: employee.email,
                 position: employee.position,
-                department: employee.department,
+                seniority: employee.seniority,
                 experience_years: employee.experience_years,
-                salary: employee.salary,
-                hire_date: employee.hire_date,
-                status: employee.status,
-                phone: employee.phone,
                 location: employee.location,
                 last_project: employee.last_project,
                 resume_url: employee.resume_url,
@@ -87,7 +79,14 @@ export function useEmployees() {
             .single();
 
         if (error || !data) {
-            console.error("Error inserting employee", error);
+            console.error(
+                "Error inserting employee",
+                error?.code,
+                error?.message,
+                error?.details,
+                error?.hint,
+                error
+            );
             return;
         }
 
@@ -140,11 +139,8 @@ export function useEmployees() {
                 name: employee.name,
                 email: employee.email,
                 position: employee.position,
-                department: employee.department,
+                seniority: employee.seniority,
                 experience_years: employee.experience_years,
-                salary: employee.salary,
-                status: employee.status,
-                phone: employee.phone,
                 location: employee.location,
                 last_project: employee.last_project,
                 resume_url: employee.resume_url,

@@ -7,13 +7,9 @@ export interface Employee {
   name: string;
   email: string;
   position: string;
-  department: string;
+  seniority?: string;
   skills: string[];
   experience_years: number;
-  salary: number;
-  hire_date: string;
-  status: string;
-  phone: string;
   location: string;
 }
 
@@ -46,7 +42,7 @@ export function useEmployees() {
       const { data, error } = await supabase
         .from("employees")
         .select("*")
-        .order("hire_date", { ascending: true });
+        .order("name", { ascending: true });
       if (error) {
         console.error(error);
         setError("Error al cargar empleados");
@@ -93,7 +89,7 @@ export function useDashboardStats() {
   const { prompts } = usePrompts();
 
   const stats = {
-    totalEmployees: employees.filter(e => e.status === "active").length,
+    totalEmployees: employees.length,
     totalRequests: prompts.length,
     avgResponseTime: "1.2s",
     successRate: "100%",
